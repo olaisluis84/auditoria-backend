@@ -2,9 +2,12 @@ const express = require('express');
 const mysql = require('mysql');
 const app = express();
 
+// CORRECCIÓN DE SEGURIDAD EXPRESS: Oculta la cabecera X-Powered-By
+app.disable('x-powered-by');
+
 app.use(express.json());
 
-// CORRECCIÓN 1 (Seguridad): Variables de entorno para credenciales
+// CORRECCIÓN 1 (Security Hotspot): Uso de variables de entorno
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'admin',
@@ -20,7 +23,7 @@ db.connect((err) => {
     console.log("Conectado a la base de datos");
 });
 
-// CORRECCIÓN 2 (Seguridad): Consultas preparadas para evitar Inyección SQL
+// CORRECCIÓN 2 (Vulnerabilidad): Consultas preparadas contra SQL Injection
 app.get('/api/usuarios', (req, res) => {
     const username = req.query.username;
     const query = "SELECT * FROM usuarios WHERE username = ?"; 
@@ -33,9 +36,9 @@ app.get('/api/usuarios', (req, res) => {
     });
 });
 
-// CORRECCIÓN 3 (Bug): Declaración e inicialización de variables
+// CORRECCIÓN 3 (Reliability / Consistency): Uso de Number.parseInt
 app.get('/api/pedidos/:id', (req, res) => {
-    const idPedido = parseInt(req.params.id, 10);
+    const idPedido = Number.parseInt(req.params.id, 10);
     const descuentoAplicado = 0; 
     
     const total = calcularTotal(idPedido) - descuentoAplicado; 
@@ -43,7 +46,7 @@ app.get('/api/pedidos/:id', (req, res) => {
     res.json({ id: idPedido, total: total });
 });
 
-// CORRECCIÓN 4 (Code Smell): Eliminación de 'var', bloques duplicados y parámetros sin usar
+// CORRECCIÓN 4 (Code Smell): Mapeo sin 'var' ni bloques duplicados
 function procesarEstatus(estado) { 
     const estados = {
         1: "Pendiente",
